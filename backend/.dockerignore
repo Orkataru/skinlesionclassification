@@ -1,0 +1,7 @@
+ISIC-images/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+README.md
+ens492-env/

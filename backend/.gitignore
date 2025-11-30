@@ -1,0 +1,37 @@
+# Image dataset folder
+ISIC-images/
+
+# Python
+.cache/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environment
+venv/
+env/
+.env/
+.conda/
+ens492-env/
+
+# IDE
+.vscode/
+.idea/
+
+# Model files 
+# *.pth
+
+# Test results and sensitive configs
+test_results/
+config.py
+*_config.json
+.env
+*.env
+secrets.json
+*_secrets.*
+deploy.cmd

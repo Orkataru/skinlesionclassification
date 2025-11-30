@@ -1,0 +1,23 @@
+# Personal documents
+*.pdf
+!final-report.pdf
+*.docx
+*.ods
+*.csv
+*.tex
+*.md
+!README.md
+!backend/README.md
+!frontend/README.md
+!recs*.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
