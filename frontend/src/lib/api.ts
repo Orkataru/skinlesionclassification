@@ -2,6 +2,7 @@ export type PredictionResponse = {
   max_confidence: number;
   prediction: number;
   probabilities: number[];
+  gradcam?: string; // Base64 encoded Grad-CAM heatmap image
 };
 
 export const CLASS_LABELS = [
@@ -15,6 +16,30 @@ export const CLASS_LABELS = [
   'SCC', 
   'Not confident'
 ];
+
+export const CLASS_FULL_NAMES: { [key: string]: string } = {
+  'MEL': 'Melanoma',
+  'NV': 'Melanocytic nevus',
+  'BCC': 'Basal cell carcinoma',
+  'AKIEC': 'Actinic keratosis',
+  'BKL': 'Benign keratosis',
+  'DF': 'Dermatofibroma',
+  'VASC': 'Vascular lesion',
+  'SCC': 'Squamous cell carcinoma',
+  'Not confident': 'Uncertain prediction'
+};
+
+export const CLASS_DESCRIPTIONS: { [key: string]: string } = {
+  'MEL': 'A serious form of skin cancer that develops from pigment-producing cells',
+  'NV': 'A common benign mole formed by clusters of pigment cells',
+  'BCC': 'The most common type of skin cancer, usually slow-growing',
+  'AKIEC': 'A rough, scaly patch caused by sun damage that may become cancerous',
+  'BKL': 'A non-cancerous growth that appears with age',
+  'DF': 'A harmless firm bump that often appears on the legs',
+  'VASC': 'Abnormal blood vessel growths in the skin',
+  'SCC': 'A common form of skin cancer from squamous cells',
+  'Not confident': 'The model is uncertain about this classification'
+};
 
 export const getPredictionLabel = (prediction: number): string => {
   if (prediction >= 0 && prediction < CLASS_LABELS.length) {
@@ -55,6 +80,10 @@ export const compressImage = (base64String: string, quality: number = 0.7, maxWi
 
 export const getPrediction = async (imageBase64: string): Promise<PredictionResponse> => {
   try {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:entry',message:'getPrediction called',data:{imageLength:imageBase64?.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
+    // #endregion
+    
     // Remove data URL prefix if it exists
     const base64Data = imageBase64.includes('base64,') 
       ? imageBase64.split('base64,')[1] 
@@ -71,6 +100,10 @@ export const getPrediction = async (imageBase64: string): Promise<PredictionResp
     const byteArray = new Uint8Array(byteArrays);
     const blob = new Blob([byteArray], { type: 'image/jpeg' });
     
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:blob',message:'Blob created',data:{blobSize:blob.size,blobType:blob.type},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
+    // #endregion
+    
     // Create FormData and append the file
     const formData = new FormData();
     formData.append('file', blob, 'image.jpg');
@@ -80,12 +113,23 @@ export const getPrediction = async (imageBase64: string): Promise<PredictionResp
       body: formData,
     });
 
+    // #region agent log
+    const responseText = await response.clone().text();
+    fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:response',message:'API response received',data:{status:response.status,statusText:response.statusText,ok:response.ok,responseBody:responseText.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
+    // #endregion
+
     if (!response.ok) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:error',message:'API returned error',data:{status:response.status,body:responseText},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
+      // #endregion
       throw new Error(`API error: ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:catch',message:'Exception caught',data:{error:String(error),errorName:(error as Error)?.name},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
+    // #endregion
     console.error('Error getting prediction:', error);
     throw error;
   }
@@ -163,4 +207,4 @@ export const captureImage = async (videoRef: React.RefObject<HTMLVideoElement | 
       reject(error);
     }
   });
-}; 
+};

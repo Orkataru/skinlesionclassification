@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SkinTracker Frontend
+
+A Next.js web application for tracking and monitoring skin lesions with AI-powered classification. This frontend integrates with the skin lesion classification backend to provide real-time analysis and visualization.
+
+> ⚠️ **Disclaimer**: This is a research tool and is not approved for clinical diagnosis. Results should not replace professional medical evaluation.
+
+*Originally developed by [@ismailcakmak](https://github.com/ismailcakmak/SkinTracker)*
+
+## Features
+
+### 🔍 AI-Powered Analysis
+- Upload or capture skin lesion images for instant classification
+- View probability distribution across 8 skin lesion types
+- Grad-CAM attention maps showing which regions influenced the AI's decision
+
+### 🗺️ Interactive Body Mapping
+- Mark mole locations on an interactive body diagram
+- Track changes in specific moles over time
+- Easy navigation between recorded lesions
+
+### 📊 Detailed Results
+- Visual probability bars for all classification categories
+- Confidence indicators with uncertainty warnings
+- Educational descriptions for each lesion type
+
+### ⚠️ Safety Features
+- Medical disclaimer banner with research tool warnings
+- Onboarding modal explaining limitations
+- Clear messaging that AI results are not diagnoses
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **State Management**: Zustand with localStorage persistence
+- **Icons**: Lucide React
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+```bash
+cd frontend
+npm install
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+frontend/
+├── src/
+│   ├── app/                    # Next.js App Router pages
+│   │   ├── page.tsx            # Home page with body map
+│   │   ├── add-mole/           # Add new mole page
+│   │   ├── process/[id]/       # Image processing page
+│   │   └── record/[moleId]/[recordId]/  # View record details
+│   ├── components/
+│   │   ├── CameraView.tsx      # Camera capture component
+│   │   ├── Header.tsx          # App header
+│   │   ├── HumanBodyViewer.tsx # Interactive body diagram
+│   │   ├── MedicalDisclaimer.tsx  # Safety disclaimer banner
+│   │   ├── MoleRecord.tsx      # Mole record display
+│   │   ├── OnboardingModal.tsx # First-time user guide
+│   │   ├── PredictionResult.tsx # AI results visualization
+│   │   └── ui/                 # shadcn/ui components
+│   └── lib/
+│       ├── api.ts              # Backend API integration
+│       ├── camera.ts           # Camera utilities
+│       ├── store.ts            # Zustand state management
+│       └── utils.ts            # Helper functions
+└── public/
+    ├── body-front.png          # Body diagram (front)
+    └── body-back.png           # Body diagram (back)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Integration
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The frontend connects to the backend API for skin lesion classification. Configure the API URL in `src/lib/api.ts`:
 
-## Deploy on Vercel
+```typescript
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is part of the ENS492 graduation project at Sabancı University.
+
+## Project Team
+
+- Bilgehan Bilgin
+- İsmail Çakmak

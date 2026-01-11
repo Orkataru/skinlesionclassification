@@ -13,6 +13,7 @@ export type MoleRecord = {
   prediction: number;
   maxConfidence: number;
   probabilities: number[];
+  gradcam?: string; // Base64 encoded Grad-CAM heatmap
 };
 
 export type Mole = {
@@ -122,4 +123,4 @@ export const useMoleStore = create<MoleStore>()(
       },
     }
   )
-); 
+);

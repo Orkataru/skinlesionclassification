@@ -22,6 +22,7 @@ function AddMoleContent() {
     prediction: number;
     maxConfidence: number;
     probabilities: number[];
+    gradcam?: string;
   } | null>(null);
   
   // Get location parameters from URL
@@ -44,6 +45,7 @@ function AddMoleContent() {
         prediction: result.prediction,
         maxConfidence: result.max_confidence,
         probabilities: result.probabilities,
+        gradcam: result.gradcam,
       });
     } catch (error) {
       console.error('Error getting prediction:', error);
@@ -70,6 +72,7 @@ function AddMoleContent() {
         prediction: prediction.prediction,
         maxConfidence: prediction.maxConfidence,
         probabilities: prediction.probabilities,
+        gradcam: prediction.gradcam,
       };
       
       if (existingMole) {
@@ -183,22 +186,13 @@ function AddMoleContent() {
               {/* Analysis section */}
               <div className="w-full md:w-1/2">
                 <div className="h-full">
-                  {isProcessing && (
-                    <PredictionResult 
-                      prediction={0}
-                      maxConfidence={0}
-                      probabilities={[]}
-                      isLoading={true}
-                    />
-                  )}
-                  
-                  {prediction && !isProcessing && (
-                    <PredictionResult 
-                      prediction={prediction.prediction}
-                      maxConfidence={prediction.maxConfidence}
-                      probabilities={prediction.probabilities}
-                    />
-                  )}
+                  <PredictionResult 
+                    prediction={prediction?.prediction ?? 0}
+                    maxConfidence={prediction?.maxConfidence ?? 0}
+                    probabilities={prediction?.probabilities ?? []}
+                    gradcamImage={prediction?.gradcam}
+                    isLoading={isProcessing}
+                  />
                 </div>
               </div>
             </div>
@@ -219,4 +213,4 @@ export default function AddMolePage() {
       <AddMoleContent />
     </Suspense>
   );
-} 
+}

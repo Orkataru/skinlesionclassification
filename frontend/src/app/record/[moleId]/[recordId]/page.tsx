@@ -93,6 +93,7 @@ function RecordContent() {
                 prediction={record.prediction}
                 maxConfidence={record.maxConfidence}
                 probabilities={record.probabilities}
+                gradcamImage={record.gradcam}
               />
             </div>
           </div>
@@ -108,4 +109,4 @@ export default function RecordPage() {
       <RecordContent />
     </Suspense>
   );
-} 
+}

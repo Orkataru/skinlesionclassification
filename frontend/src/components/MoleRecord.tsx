@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatDistanceToNow, format } from 'date-fns';
 import { MoleRecord as MoleRecordType } from '@/lib/store';
-import { getPredictionLabel } from '@/lib/api';
+import { CLASS_LABELS, CLASS_FULL_NAMES } from '@/lib/api';
 import Image from 'next/image';
 
 interface MoleRecordProps {
@@ -12,19 +12,29 @@ interface MoleRecordProps {
   onClick?: () => void;
 }
 
+// Colors for each class - matching PredictionResult
+const CLASS_COLORS: { [key: string]: string } = {
+  'MEL': '#D55E00',
+  'NV': '#009E73',
+  'BCC': '#CC79A7',
+  'AKIEC': '#E69F00',
+  'BKL': '#56B4E9',
+  'DF': '#0072B2',
+  'VASC': '#F0E442',
+  'SCC': '#999999',
+};
+
 export function MoleRecord({ record, onClick }: MoleRecordProps) {
-  const predictionLabel = getPredictionLabel(record.prediction);
+  // Find top prediction
+  const topPredictionIndex = record.probabilities
+    .slice(0, 8)
+    .reduce((maxIdx, prob, idx, arr) => prob > arr[maxIdx] ? idx : maxIdx, 0);
   
-  // Determine if the prediction indicates cancer or not
-  const isCancer = ['MEL', 'BCC', 'SCC', 'AKIEC'].includes(predictionLabel);
-  const cancerStatus = isCancer ? 'Cancer' : 'Not Cancer';
+  const topLabel = CLASS_LABELS[topPredictionIndex];
+  const topFullName = CLASS_FULL_NAMES[topLabel];
+  const topColor = CLASS_COLORS[topLabel];
+  const topProbability = record.probabilities[topPredictionIndex];
   
-  // Determine status color based on cancer classification
-  const getStatusColor = () => {
-    return isCancer ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
-  };
-  
-  const statusColor = getStatusColor();
   const recordDate = new Date(record.date);
   const dateRelative = formatDistanceToNow(recordDate, { addSuffix: true });
   const dateFormatted = format(recordDate, 'MMM d, yyyy');
@@ -54,8 +64,35 @@ export function MoleRecord({ record, onClick }: MoleRecordProps) {
                   {dateFormatted} ({dateRelative})
                 </time>
               </div>
-              <div className={`mt-1 inline-block px-2 py-1 rounded-full text-xs font-medium ${statusColor}`}>
-                {cancerStatus}
+              
+              {/* Top prediction badge */}
+              <div className="mt-2 flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: topColor }}
+                />
+                <span className="text-sm font-medium" style={{ color: topColor }}>
+                  {topLabel}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {topFullName}
+                </span>
+              </div>
+              
+              {/* Probability bar */}
+              <div className="mt-2 flex items-center gap-2">
+                <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                  <div 
+                    className="h-1.5 rounded-full transition-all"
+                    style={{ 
+                      width: `${topProbability * 100}%`,
+                      backgroundColor: topColor
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-medium" style={{ color: topColor }}>
+                  {(topProbability * 100).toFixed(0)}%
+                </span>
               </div>
             </div>
           </div>
@@ -63,4 +100,4 @@ export function MoleRecord({ record, onClick }: MoleRecordProps) {
       </CardContent>
     </Card>
   );
-} 
+}
