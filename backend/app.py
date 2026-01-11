@@ -6,10 +6,31 @@ from flask_cors import CORS
 import io
 import timm
 import os
+import numpy as np
+import base64
+import cv2
 
 app = Flask(__name__)
 # Enable CORS for all routes
 CORS(app)
+
+# Global variables for model and hooks
+model = None
+device = None
+gradients = None
+activations = None
+enable_gradcam = False  # Flag to control Grad-CAM hook behavior
+
+def save_gradient(grad):
+    global gradients
+    gradients = grad
+
+def forward_hook(module, input, output):
+    global activations, enable_gradcam
+    activations = output
+    # Only register gradient hook when explicitly enabled and tensor requires grad
+    if enable_gradcam and output.requires_grad:
+        output.register_hook(save_gradient)
 
 def load_model(model_path, device):
     # Initialize EfficientNet model
@@ -23,6 +44,12 @@ def load_model(model_path, device):
         state_dict = {k[7:]: v for k, v in state_dict.items()}
     model.load_state_dict(state_dict)
     model.eval()
+    
+    # Register hook on the last convolutional layer for Grad-CAM
+    # For EfficientNet-B5, the last conv layer is in conv_head
+    target_layer = model.conv_head
+    target_layer.register_forward_hook(forward_hook)
+    
     return model
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -37,8 +64,74 @@ val_transform = transforms.Compose([
     transforms.Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])
 ])
 
+def generate_gradcam(input_tensor, class_idx, original_image):
+    """Generate Grad-CAM heatmap for the given class."""
+    global gradients, activations, enable_gradcam
+    
+    # Enable Grad-CAM mode
+    enable_gradcam = True
+    
+    try:
+        # Enable gradients for this forward pass
+        model.zero_grad()
+        input_tensor.requires_grad_(True)
+        
+        # Forward pass
+        outputs = model(input_tensor)
+        
+        # Backward pass for the target class
+        one_hot = torch.zeros_like(outputs)
+        one_hot[0, class_idx] = 1
+        outputs.backward(gradient=one_hot, retain_graph=True)
+        
+        # Get gradients and activations
+        if gradients is None or activations is None:
+            raise ValueError("Gradients or activations not captured")
+        
+        grads = gradients.detach()
+        acts = activations.detach()
+        
+        # Global average pooling of gradients
+        weights = torch.mean(grads, dim=[2, 3], keepdim=True)
+        
+        # Weighted combination of activation maps
+        cam = torch.sum(weights * acts, dim=1, keepdim=True)
+        cam = torch.relu(cam)  # ReLU to keep only positive contributions
+        
+        # Normalize
+        cam = cam - cam.min()
+        if cam.max() > 0:
+            cam = cam / cam.max()
+        
+        # Resize to original image size
+        cam = cam.squeeze().cpu().numpy()
+        cam = cv2.resize(cam, (original_image.width, original_image.height))
+        
+        # Apply colormap
+        heatmap = cv2.applyColorMap(np.uint8(255 * cam), cv2.COLORMAP_JET)
+        heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
+        
+        # Overlay on original image
+        original_np = np.array(original_image.resize((original_image.width, original_image.height)))
+        if len(original_np.shape) == 2:
+            original_np = cv2.cvtColor(original_np, cv2.COLOR_GRAY2RGB)
+        
+        overlay = cv2.addWeighted(original_np, 0.6, heatmap, 0.4, 0)
+        
+        # Convert to base64
+        _, buffer = cv2.imencode('.png', cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+        gradcam_base64 = base64.b64encode(buffer).decode('utf-8')
+        
+        return gradcam_base64
+    finally:
+        # Always disable Grad-CAM mode and clear state
+        enable_gradcam = False
+        gradients = None
+
 @app.route('/predict', methods=['POST'])
 def predict():
+    global gradients, activations
+    
     print("Received request with files:", list(request.files.keys()))
     print("Received request with form:", list(request.form.keys()))
     if 'file' not in request.files:
@@ -46,9 +139,10 @@ def predict():
     
     file = request.files['file']
     img_bytes = file.read()
-    image = Image.open(io.BytesIO(img_bytes))
-    input_tensor = val_transform(image).unsqueeze(0).to(device)
+    original_image = Image.open(io.BytesIO(img_bytes))
+    input_tensor = val_transform(original_image).unsqueeze(0).to(device)
     
+    # First pass without gradients for prediction
     with torch.no_grad():
         outputs = model(input_tensor)
         probs = torch.softmax(outputs, dim=-1)
@@ -63,12 +157,33 @@ def predict():
         prob_list = probs.squeeze(0).cpu().tolist()
         # Add uncertainty class probability (initially 0)
         prob_list.append(1.0 if max_prob.item() < 0.5 else 0.0)
-        
-    return jsonify({
+    
+    # Generate Grad-CAM for the predicted class (or top class if uncertain)
+    gradcam_class = predicted.item()
+    gradcam_base64 = None
+    
+    try:
+        # Need to reload tensor for gradient computation
+        input_tensor = val_transform(original_image).unsqueeze(0).to(device)
+        gradcam_base64 = generate_gradcam(input_tensor, gradcam_class, original_image)
+    except Exception as e:
+        print(f"Grad-CAM generation failed: {e}")
+        gradcam_base64 = None
+    
+    response_data = {
         'prediction': prediction,
         'probabilities': prob_list,
         'max_confidence': max_prob.item()
-    })
+    }
+    
+    if gradcam_base64:
+        response_data['gradcam'] = gradcam_base64
+    
+    return jsonify(response_data)
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'healthy'})
 
 if __name__ == '__main__':
     # Get port from environment variable or default to 5000

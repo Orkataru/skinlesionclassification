@@ -11,6 +11,11 @@
 !frontend/README.md
 !recs*.md
 
+# Model weights (too large for git, available upon request)
+*.pth
+*.pt
+*.onnx
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -18,6 +23,9 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 
+# Snyk Security Extension - AI Rules (auto-generated)
+.cursor/rules/snyk_rules.mdc
