@@ -71,7 +71,7 @@ export function PredictionResult(props: PredictionResultProps) {
       </Card>
     );
   }
-
+  
   if (!probabilities || probabilities.length === 0) {
     return (
       <Card className="w-full h-full flex flex-col">
@@ -86,7 +86,7 @@ export function PredictionResult(props: PredictionResultProps) {
     <Card className="w-full h-full flex flex-col">
       <CardTitle className="text-center pt-4 pb-2">Analysis Result</CardTitle>
       <CardContent className="flex-1 flex flex-col p-4 overflow-hidden">
-        
+          
         {/* Top Prediction Summary */}
         <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between">
@@ -96,18 +96,18 @@ export function PredictionResult(props: PredictionResultProps) {
                 {topPrediction?.fullName}
               </p>
               <p className="text-sm text-gray-600">({topPrediction?.label})</p>
-            </div>
-            <div className="text-right">
+              </div>
+              <div className="text-right">
               <p className="text-3xl font-bold" style={{ color: topPrediction?.color }}>
                 {(topPrediction?.probability * 100).toFixed(1)}%
               </p>
               <p className="text-xs text-gray-500">
                 {maxConfidence >= 0.5 ? 'Confident' : 'Uncertain'}
               </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-
+            
         {/* Tab Navigation */}
         <div className="flex border-b mb-4">
           <button
@@ -132,7 +132,7 @@ export function PredictionResult(props: PredictionResultProps) {
             <Eye className="h-4 w-4" />
             Attention Map
           </button>
-        </div>
+              </div>
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto">
@@ -143,14 +143,14 @@ export function PredictionResult(props: PredictionResultProps) {
                 <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide">Probability Distribution</p>
                 <div className="h-8 rounded-lg overflow-hidden flex shadow-inner bg-gray-100">
                   {sortedClasses.map((cls) => (
-                    <div
+                  <div 
                       key={cls.index}
                       className="h-full transition-all duration-300 cursor-pointer relative group"
-                      style={{ 
+                    style={{ 
                         width: `${cls.probability * 100}%`,
                         backgroundColor: cls.color,
                         minWidth: cls.probability > 0.01 ? '2px' : '0'
-                      }}
+                    }}
                       onMouseEnter={() => setHoveredClass(cls.index)}
                       onMouseLeave={() => setHoveredClass(null)}
                     >
@@ -162,9 +162,9 @@ export function PredictionResult(props: PredictionResultProps) {
                       )}
                     </div>
                   ))}
-                </div>
-              </div>
-
+            </div>
+          </div>
+          
               {/* Class Legend with Bars */}
               <div className="space-y-2">
                 {sortedClasses.map((cls, idx) => (
@@ -180,25 +180,25 @@ export function PredictionResult(props: PredictionResultProps) {
                         className="w-4 h-4 rounded-full flex-shrink-0"
                         style={{ backgroundColor: cls.color }}
                       />
-                      
+              
                       {/* Label and bar */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-sm">{cls.label}</span>
                             <span className="text-xs text-gray-500 truncate">{cls.fullName}</span>
-                          </div>
+                    </div>
                           <span className="font-bold text-sm" style={{ color: cls.color }}>
                             {(cls.probability * 100).toFixed(1)}%
                           </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
                             className="h-2 rounded-full transition-all duration-500"
-                            style={{ 
+                          style={{ 
                               width: `${cls.probability * 100}%`,
                               backgroundColor: cls.color
-                            }}
+                          }}
                           />
                         </div>
                       </div>
@@ -250,7 +250,7 @@ export function PredictionResult(props: PredictionResultProps) {
                   <p className="text-gray-400 text-xs mt-1">
                     This feature requires the latest backend version
                   </p>
-                </div>
+              </div>
               )}
             </div>
           )}
@@ -269,4 +269,4 @@ export function PredictionResult(props: PredictionResultProps) {
       </CardContent>
     </Card>
   );
-}
+} 

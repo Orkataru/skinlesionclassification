@@ -186,13 +186,13 @@ function AddMoleContent() {
               {/* Analysis section */}
               <div className="w-full md:w-1/2">
                 <div className="h-full">
-                  <PredictionResult 
+                    <PredictionResult 
                     prediction={prediction?.prediction ?? 0}
                     maxConfidence={prediction?.maxConfidence ?? 0}
                     probabilities={prediction?.probabilities ?? []}
                     gradcamImage={prediction?.gradcam}
                     isLoading={isProcessing}
-                  />
+                    />
                 </div>
               </div>
             </div>
@@ -213,4 +213,4 @@ export default function AddMolePage() {
       <AddMoleContent />
     </Suspense>
   );
-}
+} 

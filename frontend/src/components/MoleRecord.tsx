@@ -100,4 +100,4 @@ export function MoleRecord({ record, onClick }: MoleRecordProps) {
       </CardContent>
     </Card>
   );
-}
+} 
