@@ -1,0 +1,134 @@
+[
+  {
+    "id": "ISIC_0011865",
+    "category": "benign_dermatofibroma",
+    "src": "/sample-images/benign_dermatofibroma/ISIC_0011865.jpg",
+    "filename": "ISIC_0011865.jpg"
+  },
+  {
+    "id": "ISIC_0012482",
+    "category": "benign_dermatofibroma",
+    "src": "/sample-images/benign_dermatofibroma/ISIC_0012482.jpg",
+    "filename": "ISIC_0012482.jpg"
+  },
+  {
+    "id": "ISIC_0012995",
+    "category": "benign_dermatofibroma",
+    "src": "/sample-images/benign_dermatofibroma/ISIC_0012995.jpg",
+    "filename": "ISIC_0012995.jpg"
+  },
+  {
+    "id": "ISIC_0013116",
+    "category": "benign_dermatofibroma",
+    "src": "/sample-images/benign_dermatofibroma/ISIC_0013116.jpg",
+    "filename": "ISIC_0013116.jpg"
+  },
+  {
+    "id": "ISIC_0013442",
+    "category": "benign_dermatofibroma",
+    "src": "/sample-images/benign_dermatofibroma/ISIC_0013442.jpg",
+    "filename": "ISIC_0013442.jpg"
+  },
+  {
+    "id": "ISIC_0001129",
+    "category": "benign_vascular_lesions",
+    "src": "/sample-images/benign_vascular_lesions/ISIC_0001129.jpg",
+    "filename": "ISIC_0001129.jpg"
+  },
+  {
+    "id": "ISIC_0011637",
+    "category": "benign_vascular_lesions",
+    "src": "/sample-images/benign_vascular_lesions/ISIC_0011637.jpg",
+    "filename": "ISIC_0011637.jpg"
+  },
+  {
+    "id": "ISIC_0011983",
+    "category": "benign_vascular_lesions",
+    "src": "/sample-images/benign_vascular_lesions/ISIC_0011983.jpg",
+    "filename": "ISIC_0011983.jpg"
+  },
+  {
+    "id": "ISIC_0012014",
+    "category": "benign_vascular_lesions",
+    "src": "/sample-images/benign_vascular_lesions/ISIC_0012014.jpg",
+    "filename": "ISIC_0012014.jpg"
+  },
+  {
+    "id": "ISIC_0021963",
+    "category": "malignant_bcc",
+    "src": "/sample-images/malignant_bcc/ISIC_0021963.jpg",
+    "filename": "ISIC_0021963.jpg"
+  },
+  {
+    "id": "ISIC_0023887",
+    "category": "malignant_bcc",
+    "src": "/sample-images/malignant_bcc/ISIC_0023887.jpg",
+    "filename": "ISIC_0023887.jpg"
+  },
+  {
+    "id": "ISIC_0023981",
+    "category": "malignant_bcc",
+    "src": "/sample-images/malignant_bcc/ISIC_0023981.jpg",
+    "filename": "ISIC_0023981.jpg"
+  },
+  {
+    "id": "ISIC_0023990",
+    "category": "malignant_bcc",
+    "src": "/sample-images/malignant_bcc/ISIC_0023990.jpg",
+    "filename": "ISIC_0023990.jpg"
+  },
+  {
+    "id": "ISIC_0000029",
+    "category": "malignant_melanocytic_proliferations",
+    "src": "/sample-images/malignant_melanocytic_proliferations/ISIC_0000029.jpg",
+    "filename": "ISIC_0000029.jpg"
+  },
+  {
+    "id": "ISIC_0000030",
+    "category": "malignant_melanocytic_proliferations",
+    "src": "/sample-images/malignant_melanocytic_proliferations/ISIC_0000030.jpg",
+    "filename": "ISIC_0000030.jpg"
+  },
+  {
+    "id": "ISIC_0000031",
+    "category": "malignant_melanocytic_proliferations",
+    "src": "/sample-images/malignant_melanocytic_proliferations/ISIC_0000031.jpg",
+    "filename": "ISIC_0000031.jpg"
+  },
+  {
+    "id": "ISIC_0012695",
+    "category": "malignant_scc",
+    "src": "/sample-images/malignant_scc/ISIC_0012695.jpg",
+    "filename": "ISIC_0012695.jpg"
+  },
+  {
+    "id": "ISIC_0012775",
+    "category": "malignant_scc",
+    "src": "/sample-images/malignant_scc/ISIC_0012775.jpg",
+    "filename": "ISIC_0012775.jpg"
+  },
+  {
+    "id": "ISIC_0024336",
+    "category": "pigmented_benign_keratosis",
+    "src": "/sample-images/pigmented_benign_keratosis/ISIC_0024336.jpg",
+    "filename": "ISIC_0024336.jpg"
+  },
+  {
+    "id": "ISIC_0024371",
+    "category": "pigmented_benign_keratosis",
+    "src": "/sample-images/pigmented_benign_keratosis/ISIC_0024371.jpg",
+    "filename": "ISIC_0024371.jpg"
+  },
+  {
+    "id": "ISIC_0024381",
+    "category": "pigmented_benign_keratosis",
+    "src": "/sample-images/pigmented_benign_keratosis/ISIC_0024381.jpg",
+    "filename": "ISIC_0024381.jpg"
+  },
+  {
+    "id": "ISIC_0024383",
+    "category": "pigmented_benign_keratosis",
+    "src": "/sample-images/pigmented_benign_keratosis/ISIC_0024383.jpg",
+    "filename": "ISIC_0024383.jpg"
+  }
+]
