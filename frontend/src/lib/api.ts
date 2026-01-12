@@ -5,6 +5,14 @@ export type PredictionResponse = {
   gradcam?: string; // Base64 encoded Grad-CAM heatmap image
 };
 
+const DEFAULT_PREDICT_URL =
+  'https://skin-lesion-service-286247711107.us-central1.run.app/predict';
+
+const getPredictUrl = (): string => {
+  // Optional override for local/dev deployments
+  return process.env.NEXT_PUBLIC_PREDICT_URL || DEFAULT_PREDICT_URL;
+};
+
 export const CLASS_LABELS = [
   'MEL', 
   'NV', 
@@ -78,12 +86,108 @@ export const compressImage = (base64String: string, quality: number = 0.7, maxWi
   });
 };
 
+export const normalizeImageBlob = async (
+  blob: Blob,
+  opts: { maxSide?: number; quality?: number } = {}
+): Promise<Blob> => {
+  const maxSide = opts.maxSide ?? 1024;
+  const quality = opts.quality ?? 0.85;
+
+  // Decode
+  let width: number;
+  let height: number;
+  let drawSource: CanvasImageSource;
+
+  if (typeof createImageBitmap === 'function') {
+    const bitmap = await createImageBitmap(blob);
+    width = bitmap.width;
+    height = bitmap.height;
+    drawSource = bitmap;
+    try {
+      // Resize
+      const scale = Math.min(1, maxSide / Math.max(width, height));
+      const targetW = Math.max(1, Math.round(width * scale));
+      const targetH = Math.max(1, Math.round(height * scale));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return blob;
+
+      ctx.drawImage(drawSource, 0, 0, targetW, targetH);
+
+      // Encode as JPEG
+      const out = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((b) => resolve(b ?? blob), 'image/jpeg', quality);
+      });
+
+      return out;
+    } finally {
+      bitmap.close();
+    }
+  }
+
+  // Fallback path (older browsers): decode via <img>
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error('Failed to decode image'));
+      el.src = objectUrl;
+    });
+
+    width = img.naturalWidth;
+    height = img.naturalHeight;
+    drawSource = img;
+
+    const scale = Math.min(1, maxSide / Math.max(width, height));
+    const targetW = Math.max(1, Math.round(width * scale));
+    const targetH = Math.max(1, Math.round(height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return blob;
+
+    ctx.drawImage(drawSource, 0, 0, targetW, targetH);
+
+    const out = await new Promise<Blob>((resolve) => {
+      canvas.toBlob((b) => resolve(b ?? blob), 'image/jpeg', quality);
+    });
+
+    return out;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+};
+
+export const getPredictionFromBlob = async (
+  imageBlob: Blob,
+  filename: string = 'image.jpg'
+): Promise<PredictionResponse> => {
+  const formData = new FormData();
+  formData.append('file', imageBlob, filename);
+
+  const response = await fetch(getPredictUrl(), {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const responseText = await response.text().catch(() => '');
+    throw new Error(`API error: ${response.status} ${responseText}`);
+  }
+
+  return await response.json();
+};
+
 export const getPrediction = async (imageBase64: string): Promise<PredictionResponse> => {
   try {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:entry',message:'getPrediction called',data:{imageLength:imageBase64?.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
-    // #endregion
-    
     // Remove data URL prefix if it exists
     const base64Data = imageBase64.includes('base64,') 
       ? imageBase64.split('base64,')[1] 
@@ -91,45 +195,14 @@ export const getPrediction = async (imageBase64: string): Promise<PredictionResp
     
     // Create a Blob from the base64 data
     const byteCharacters = atob(base64Data);
-    const byteArrays = [];
-    
+    const byteArray = new Uint8Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
-      byteArrays.push(byteCharacters.charCodeAt(i));
+      byteArray[i] = byteCharacters.charCodeAt(i);
     }
-    
-    const byteArray = new Uint8Array(byteArrays);
+
     const blob = new Blob([byteArray], { type: 'image/jpeg' });
-    
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:blob',message:'Blob created',data:{blobSize:blob.size,blobType:blob.type},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
-    // #endregion
-    
-    // Create FormData and append the file
-    const formData = new FormData();
-    formData.append('file', blob, 'image.jpg');
-    
-    const response = await fetch('https://skin-lesion-service-286247711107.us-central1.run.app/predict', {
-      method: 'POST',
-      body: formData,
-    });
-
-    // #region agent log
-    const responseText = await response.clone().text();
-    fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:response',message:'API response received',data:{status:response.status,statusText:response.statusText,ok:response.ok,responseBody:responseText.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
-    // #endregion
-
-    if (!response.ok) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:error',message:'API returned error',data:{status:response.status,body:responseText},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
-      // #endregion
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    return await response.json();
+    return await getPredictionFromBlob(blob, 'image.jpg');
   } catch (error) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/2a1324a1-d3dd-4e63-97f4-5b0a585a16d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:getPrediction:catch',message:'Exception caught',data:{error:String(error),errorName:(error as Error)?.name},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
-    // #endregion
     console.error('Error getting prediction:', error);
     throw error;
   }

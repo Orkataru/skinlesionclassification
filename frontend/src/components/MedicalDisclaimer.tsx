@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 
 export function MedicalDisclaimer() {
-  const [isVisible, setIsVisible] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
@@ -24,8 +23,6 @@ export function MedicalDisclaimer() {
     setIsMinimized(false);
     localStorage.removeItem('disclaimer-minimized');
   };
-
-  if (!isVisible) return null;
 
   if (isMinimized) {
     return (

@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Info, Eye, BarChart3, Loader2 } from 'lucide-react';
 import { CLASS_LABELS, CLASS_FULL_NAMES, CLASS_DESCRIPTIONS } from '@/lib/api';
 import Image from 'next/image';
