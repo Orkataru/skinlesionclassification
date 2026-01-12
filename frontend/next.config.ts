@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -39,6 +40,14 @@ const nextConfig: NextConfig = {
   
   // Prevent minification of camera-related code
   webpack: (config, { dev, isServer }) => {
+    // Ensure path aliases are resolved correctly
+    if (config.resolve) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@': path.resolve(__dirname, './src'),
+      };
+    }
+    
     if (!dev && !isServer) {
       // Preserve camera-related modules from excessive optimization
       config.optimization.minimize = true;
